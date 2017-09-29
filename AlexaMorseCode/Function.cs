@@ -112,26 +112,27 @@ namespace AlexaMorseCode
         public List<char> Translate(char[] letters)
         {
             List<char> morse = new List<char>();
-            //for (int i = 0; i < letters.Length; i++)
+            //for (int i = 0; i < letters.Length; i++) //loop through each letter
             //{
-            //    List<char> temp = new List<char>();
+            //    List<char> temp = new List<char>(); //list for morse code for one single letter
             //    //TODO: Get translation from letters[i] and add to temp<char>
             //    //DB tutorial: http://matthiasshapiro.com/2017/03/21/tutorial-dynamodb-in-net/
             //    for (int j = 0; j < temp.Capacity; j++)
             //    {
-            //        morse.Add(temp.ElementAt(0));
-            //        if (j != temp.Capacity - 1)
+            //        morse.Add(temp.ElementAt(0)); //add morse sign to total morse code
+            //        if (j != temp.Capacity - 1) //add short pause if not final morse sign for current letter
             //        {
             //            morse.Add(',');
             //        }
             //    }
-            //    if (i != letters.Length - 1)
+                  //Calc last sign for current letter
+            //    if (i != letters.Length - 1) //if not final letter
             //    {
-            //        if (letters[i + 1] == ' ')
+            //        if (letters[i + 1] == ' ') //add very long pause if next letter is space
             //        {
             //            morse.Add('|');
             //        }
-            //        else
+            //        else //add long pause if next letter is normal letter
             //        {
             //            morse.Add('+');
             //        }
@@ -171,6 +172,7 @@ namespace AlexaMorseCode
                         break;
                     case '|':
                         ResponseBuilder.AudioPlayerPlay(PlayBehavior.Enqueue, audioItems[4].Url, audioItems[4].Title); //350ms_silence
+                        
                         break;
                 }
             }
@@ -216,9 +218,10 @@ namespace AlexaMorseCode
                         break;
                     case "TranslateIntent": //TODO: Check if working
                         log.LogLine($"GetFactIntent sent: send new fact");
-                        innerResponse = new PlainTextOutputSpeech();
-                        //var morseRequested = intentRequest.Intent.Slots["Literal"].Value;
-                        (innerResponse as PlainTextOutputSpeech).Text = GetResources()[0].GetMorseCode;
+                        //innerResponse = new PlainTextOutputSpeech();
+                        var morseRequested = intentRequest.Intent.Slots["Literal"].Value;
+                        response = ResponseBuilder.AudioPlayerPlay(PlayBehavior.ReplaceAll, "https://s3.eu-central-1.amazonaws.com/morseitech/150ms.mp3", "penis");
+                        //(innerResponse as PlainTextOutputSpeech).Text = GetResources()[0].GetMorseCode;
                         //Output(Translate(ToArray(morseRequested)));
                         break;
                     default:
