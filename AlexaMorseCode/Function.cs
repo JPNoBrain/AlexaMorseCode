@@ -179,12 +179,12 @@ namespace AlexaMorseCode
             //TODO
         }
 
-        public List<SkillResponse> FunctionHandler(SkillRequest input, ILambdaContext context)
+        public SkillResponse FunctionHandler(SkillRequest input, ILambdaContext context)
         {
-            List<SkillResponse> response = new List<SkillResponse>();
-            response.Add(new SkillResponse());
-            response.ElementAt(0).Response = new ResponseBody();
-            response.ElementAt(0).Response.ShouldEndSession = false;
+            SkillResponse response = new SkillResponse();
+            response.Response = new ResponseBody();
+            //response.Response.ShouldEndSession = false;
+            response.Response.ShouldEndSession = true;
             IOutputSpeech innerResponse = null;
             var log = context.Logger;
 
@@ -204,13 +204,13 @@ namespace AlexaMorseCode
                         log.LogLine($"AMAZON.CancelIntent: send StopMessage");
                         innerResponse = new PlainTextOutputSpeech();
                         (innerResponse as PlainTextOutputSpeech).Text = GetResources()[0].StopMessage;
-                        response.ElementAt(0).Response.ShouldEndSession = true;
+                        response.Response.ShouldEndSession = true;
                         break;
                     case "AMAZON.StopIntent":
                         log.LogLine($"AMAZON.StopIntent: send StopMessage");
                         innerResponse = new PlainTextOutputSpeech();
                         (innerResponse as PlainTextOutputSpeech).Text = GetResources()[0].StopMessage;
-                        response.ElementAt(0).Response.ShouldEndSession = true;
+                        response.Response.ShouldEndSession = true;
                         break;
                     case "AMAZON.HelpIntent":
                         log.LogLine($"AMAZON.HelpIntent: send HelpMessage");
@@ -220,10 +220,25 @@ namespace AlexaMorseCode
                     case "TranslateIntent": //TODO: Check if working
                         log.LogLine($"GetFactIntent sent: send new fact");
                         //innerResponse = new PlainTextOutputSpeech();
-                        var morseRequested = intentRequest.Intent.Slots["Literal"].Value;
-                        response.Add(new SkillResponse());
-                        response.
+                        //var morseRequested = intentRequest.Intent.Slots["Literal"].Value;
+                        //List<char> morse = Translate(ToArray(morseRequested));
+
+                        //response.Response.Directives.Add(new AudioPlayerPlayDirective()
+                        //{
+                        //    PlayBehavior = PlayBehavior.Enqueue,
+                        //    AudioItem = new Alexa.NET.Response.Directive.AudioItem()
+                        //    {
+
+                        //        Stream = new AudioItemStream()
+                        //        {
+                        //            Url = "https://s3.eu-central-1.amazonaws.com/morseitech/150ms.mp3",
+                        //            Token = "150ms"
+                        //        }
+                        //    }
+                        //});
+
                         response = ResponseBuilder.AudioPlayerPlay(PlayBehavior.ReplaceAll, "https://s3.eu-central-1.amazonaws.com/morseitech/150ms.mp3", "penis");
+
                         //(innerResponse as PlainTextOutputSpeech).Text = GetResources()[0].GetMorseCode;
                         //Output(Translate(ToArray(morseRequested)));
                         break;
