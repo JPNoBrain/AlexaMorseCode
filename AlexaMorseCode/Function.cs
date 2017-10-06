@@ -179,12 +179,11 @@ namespace AlexaMorseCode
             //TODO
         }
 
-        public SkillResponse FunctionHandler(SkillRequest input, ILambdaContext context)
+        public async Task<SkillResponse> FunctionHandler(SkillRequest input, ILambdaContext context)
         {
             SkillResponse response = new SkillResponse();
             response.Response = new ResponseBody();
-            //response.Response.ShouldEndSession = false;
-            response.Response.ShouldEndSession = true;
+            response.Response.ShouldEndSession = false;
             IOutputSpeech innerResponse = null;
             var log = context.Logger;
 
@@ -225,29 +224,81 @@ namespace AlexaMorseCode
 
                         //response.Response.Directives.Add(new AudioPlayerPlayDirective()
                         //{
+                        //    PlayBehavior = PlayBehavior.ReplaceAll,
+                        //    AudioItem = new Alexa.NET.Response.Directive.AudioItem()
+                        //    {
+
+                        //        Stream = new AudioItemStream()
+                        //        {
+                        //            Url = "https://s3.eu-central-1.amazonaws.com/morseitech/120ms.mp3",
+                        //            Token = "120ms"
+                        //        }
+                        //    }
+                        //});
+
+                        //response.Response.Directives.Add(new AudioPlayerPlayDirective()
+                        //{
+
                         //    PlayBehavior = PlayBehavior.Enqueue,
                         //    AudioItem = new Alexa.NET.Response.Directive.AudioItem()
                         //    {
 
                         //        Stream = new AudioItemStream()
                         //        {
-                        //            Url = "https://s3.eu-central-1.amazonaws.com/morseitech/150ms.mp3",
-                        //            Token = "150ms"
+                        //            Url = "https://s3.eu-central-1.amazonaws.com/morseitech/360ms.mp3",
+                        //            Token = "360ms",
+                        //            ExpectedPreviousToken = "120ms"
                         //        }
                         //    }
                         //});
 
-                        response = ResponseBuilder.AudioPlayerPlay(PlayBehavior.ReplaceAll, "https://s3.eu-central-1.amazonaws.com/morseitech/150ms.mp3", "penis");
+
+
+                        //response.Response.ShouldEndSession = true;
+
+                        response = ResponseBuilder.AudioPlayerPlay(PlayBehavior.ReplaceAll, "https://s3.eu-central-1.amazonaws.com/morseitech/360ms.mp3", "test");
 
                         //(innerResponse as PlainTextOutputSpeech).Text = GetResources()[0].GetMorseCode;
                         //Output(Translate(ToArray(morseRequested)));
                         break;
+                        
                     default:
                         log.LogLine($"Unknown intent: " + intentRequest.Intent.Name);
                         innerResponse = new PlainTextOutputSpeech();
                         (innerResponse as PlainTextOutputSpeech).Text = GetResources()[0].HelpReprompt;
                         break;
                 }
+            }
+            else if (input.GetRequestType() == typeof(AudioPlayerRequest))
+            {
+                var audioPlayerRequest = (AudioPlayerRequest)input.Request;
+                if (audioPlayerRequest.AudioRequestType == AudioRequestType.PlaybackNearlyFinished)
+                {
+                    //response.Response.Directives.Add(new AudioPlayerPlayDirective()
+                    //{
+
+                    //    PlayBehavior = PlayBehavior.Enqueue,
+                    //    AudioItem = new Alexa.NET.Response.Directive.AudioItem()
+                    //    {
+
+                    //        Stream = new AudioItemStream()
+                    //        {
+                    //            Url = "https://s3.eu-central-1.amazonaws.com/morseitech/360ms.mp3",
+                    //            Token = "360ms",
+                    //            ExpectedPreviousToken = "120ms"
+                    //        }
+                    //    }
+                    //});
+                    response = ResponseBuilder.AudioPlayerPlay(PlayBehavior.Enqueue, "https://s3.eu-central-1.amazonaws.com/morseitech/360ms.mp3", "test2","test",0);
+
+                }
+                
+ 
+
+
+                
+
+
             }
             response.Response.OutputSpeech = innerResponse;
             response.Version = "1.0";
