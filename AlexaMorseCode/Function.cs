@@ -14,6 +14,7 @@ using Amazon.DynamoDBv2;
 using Amazon;
 using Amazon.DynamoDBv2.DataModel;
 using Amazon.DynamoDBv2.DocumentModel;
+using System.Threading;
 
 // Assembly attribute to enable the Lambda function's JSON input to be converted into a .NET class.
 [assembly: LambdaSerializer(typeof(Amazon.Lambda.Serialization.Json.JsonSerializer))]
@@ -151,6 +152,10 @@ namespace AlexaMorseCode
 
         public async Task<SkillResponse> FunctionHandler(SkillRequest input, ILambdaContext context)
         {
+            var credentials = new BasicAWSCredentials(accessKey, secretKey);
+            var client = new AmazonDynamoDBClient(credentials, RegionEndpoint.USEast1);
+            var dbContext = new DynamoDBContext(client);
+
             SkillResponse response = new SkillResponse();
             response.Response = new ResponseBody();
             response.Response.ShouldEndSession = false;
@@ -225,18 +230,11 @@ namespace AlexaMorseCode
 
 
                         //response.Response.ShouldEndSession = true;
-
-                        string tableName = "alphabet";
-                        string hashKey = "letter";
                         char[] letters = morseRequested.ToCharArray();
-
-                        var credentials = new BasicAWSCredentials(accessKey, secretKey);
-                        var client = new AmazonDynamoDBClient(credentials, RegionEndpoint.USEast1);
-
-                        var dbContext = new DynamoDBContext(client);
                         List<char> morse = new List<char>();
                         int i = 0;
-                        foreach (var item in letters)
+                        string token = "";
+                        foreach (char item in letters)
                         {
                             if (item == ' ')
                             {
@@ -244,26 +242,22 @@ namespace AlexaMorseCode
                             }
                             else
                             {
-                                char[] temp = { '.', ',', '-' };
+                                char comp = item.ToString().ToUpper().ToCharArray()[0];
+                                List<ScanCondition> conditions = new List<ScanCondition>();
+                                conditions.Add(new ScanCondition("letter", ScanOperator.Equal, comp));
+
+                                var allDocs = await dbContext.ScanAsync<alphabet>(conditions).GetRemainingAsync();
+                                var tempDoc = allDocs.FirstOrDefault();
+                                String tempString = tempDoc.morse;
+                                char[] temp = tempString.ToCharArray();
                                 foreach (var itemm in temp)
                                 {
                                     morse.Add(itemm);
                                 }
                                 morse.Add('+');
-                                
                             }
                             i++;
                         }
-                        //for (int i = 0; i < letters.Length; i++) //loop through each letter
-                        //{
-                        //    //List<ScanCondition> conditions = new List<ScanCondition>();
-                        //    //conditions.Add(new ScanCondition("letter", ScanOperator.Equal, letters[i]));
-
-                        //    //var allDocs = await dbContext.ScanAsync<alphabet>(conditions).GetRemainingAsync();
-                        //    //var tempDoc = allDocs.FirstOrDefault();
-                        //    //String tempString = tempDoc.morse;
-                        //    //char[] temp = tempString.ToCharArray();
-                        string token = "";
                         foreach (var item in morse)
                         {
                             token += item;
