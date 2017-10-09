@@ -9,6 +9,11 @@ using Alexa.NET.Request;
 using Alexa.NET.Response.Directive;
 using AudioSkillSample.Assets;
 using Alexa.NET;
+using Amazon.Runtime;
+using Amazon.DynamoDBv2;
+using Amazon;
+using Amazon.DynamoDBv2.DataModel;
+using Amazon.DynamoDBv2.DocumentModel;
 
 // Assembly attribute to enable the Lambda function's JSON input to be converted into a .NET class.
 [assembly: LambdaSerializer(typeof(Amazon.Lambda.Serialization.Json.JsonSerializer))]
@@ -79,9 +84,16 @@ namespace AlexaMorseCode
         public string LaunchMessage { get; set; }
     }
 
+    public class alphabet
+    {
+        public char letter { get; set; }
+        public string morse { get; set; }
+    }
+
     public class Function
     {
-
+        private const string accessKey = "AKIAIQXPCGJ7QER56STQ";
+        private const string secretKey = "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";
         /// <summary>
         /// A simple function that takes a string and does a ToUpper
         /// </summary>
@@ -109,48 +121,6 @@ namespace AlexaMorseCode
             return characters;
         }
 
-        public List<char> Translate(char[] letters)
-        {
-            List<char> morse = new List<char>();
-            //for (int i = 0; i < letters.Length; i++) //loop through each letter
-            //{
-            //    List<char> temp = new List<char>(); //list for morse code for one single letter
-            //    //TODO: Get translation from letters[i] and add to temp<char>
-            //    //DB tutorial: http://matthiasshapiro.com/2017/03/21/tutorial-dynamodb-in-net/
-            //    for (int j = 0; j < temp.Capacity; j++)
-            //    {
-            //        morse.Add(temp.ElementAt(0)); //add morse sign to total morse code
-            //        if (j != temp.Capacity - 1) //add short pause if not final morse sign for current letter
-            //        {
-            //            morse.Add(',');
-            //        }
-            //    }
-                  //Calc last sign for current letter
-            //    if (i != letters.Length - 1) //if not final letter
-            //    {
-            //        if (letters[i + 1] == ' ') //add very long pause if next letter is space
-            //        {
-            //            morse.Add('|');
-            //        }
-            //        else //add long pause if next letter is normal letter
-            //        {
-            //            morse.Add('+');
-            //        }
-            //    }
-            //}
-            morse.Add('.');
-            morse.Add(',');
-            morse.Add('.');
-            morse.Add(',');
-            morse.Add('-');
-            morse.Add('+');
-            morse.Add('-');
-            morse.Add(',');
-            morse.Add('|');
-            morse.Add('.');
-            return morse;
-        }
-
         public void Output(List<char> input)
         {
             var audioItems = AudioAssets.GetSampleAudioFiles();
@@ -172,19 +142,18 @@ namespace AlexaMorseCode
                         break;
                     case '|':
                         ResponseBuilder.AudioPlayerPlay(PlayBehavior.Enqueue, audioItems[4].Url, audioItems[4].Title); //350ms_silence
-                        
+
                         break;
                 }
             }
             //TODO
         }
 
-        public List<SkillResponse> FunctionHandler(SkillRequest input, ILambdaContext context)
+        public async Task<SkillResponse> FunctionHandler(SkillRequest input, ILambdaContext context)
         {
-            List<SkillResponse> response = new List<SkillResponse>();
-            response.Add(new SkillResponse());
-            response.ElementAt(0).Response = new ResponseBody();
-            response.ElementAt(0).Response.ShouldEndSession = false;
+            SkillResponse response = new SkillResponse();
+            response.Response = new ResponseBody();
+            response.Response.ShouldEndSession = false;
             IOutputSpeech innerResponse = null;
             var log = context.Logger;
 
@@ -204,13 +173,13 @@ namespace AlexaMorseCode
                         log.LogLine($"AMAZON.CancelIntent: send StopMessage");
                         innerResponse = new PlainTextOutputSpeech();
                         (innerResponse as PlainTextOutputSpeech).Text = GetResources()[0].StopMessage;
-                        response.ElementAt(0).Response.ShouldEndSession = true;
+                        response.Response.ShouldEndSession = true;
                         break;
                     case "AMAZON.StopIntent":
                         log.LogLine($"AMAZON.StopIntent: send StopMessage");
                         innerResponse = new PlainTextOutputSpeech();
                         (innerResponse as PlainTextOutputSpeech).Text = GetResources()[0].StopMessage;
-                        response.ElementAt(0).Response.ShouldEndSession = true;
+                        response.Response.ShouldEndSession = true;
                         break;
                     case "AMAZON.HelpIntent":
                         log.LogLine($"AMAZON.HelpIntent: send HelpMessage");
@@ -221,18 +190,124 @@ namespace AlexaMorseCode
                         log.LogLine($"GetFactIntent sent: send new fact");
                         //innerResponse = new PlainTextOutputSpeech();
                         var morseRequested = intentRequest.Intent.Slots["Literal"].Value;
-                        response.Add(new SkillResponse());
-                        response.
-                        response = ResponseBuilder.AudioPlayerPlay(PlayBehavior.ReplaceAll, "https://s3.eu-central-1.amazonaws.com/morseitech/150ms.mp3", "penis");
-                        //(innerResponse as PlainTextOutputSpeech).Text = GetResources()[0].GetMorseCode;
-                        //Output(Translate(ToArray(morseRequested)));
+                        //List<char> morse = Translate(ToArray(morseRequested));
+
+                        //response.Response.Directives.Add(new AudioPlayerPlayDirective()
+                        //{
+                        //    PlayBehavior = PlayBehavior.ReplaceAll,
+                        //    AudioItem = new Alexa.NET.Response.Directive.AudioItem()
+                        //    {
+
+                        //        Stream = new AudioItemStream()
+                        //        {
+                        //            Url = "https://s3.eu-central-1.amazonaws.com/morseitech/120ms.mp3",
+                        //            Token = "120ms"
+                        //        }
+                        //    }
+                        //});
+
+                        //response.Response.Directives.Add(new AudioPlayerPlayDirective()
+                        //{
+
+                        //    PlayBehavior = PlayBehavior.Enqueue,
+                        //    AudioItem = new Alexa.NET.Response.Directive.AudioItem()
+                        //    {
+
+                        //        Stream = new AudioItemStream()
+                        //        {
+                        //            Url = "https://s3.eu-central-1.amazonaws.com/morseitech/360ms.mp3",
+                        //            Token = "360ms",
+                        //            ExpectedPreviousToken = "120ms"
+                        //        }
+                        //    }
+                        //});
+
+
+
+                        //response.Response.ShouldEndSession = true;
+
+                        string tableName = "alphabet";
+                        string hashKey = "letter";
+                        char[] letters = morseRequested.ToCharArray();
+
+                        var credentials = new BasicAWSCredentials(accessKey, secretKey);
+                        var client = new AmazonDynamoDBClient(credentials, RegionEndpoint.USEast1);
+
+                        var dbContext = new DynamoDBContext(client);
+                        List<char> morse = new List<char>();
+                        int i = 0;
+                        foreach (var item in letters)
+                        {
+                            if (item == ' ')
+                            {
+                                morse.Add('|');
+                            }
+                            else
+                            {
+                                char[] temp = { '.', ',', '-' };
+                                foreach (var itemm in temp)
+                                {
+                                    morse.Add(itemm);
+                                }
+                                morse.Add('+');
+                                
+                            }
+                            i++;
+                        }
+                        //for (int i = 0; i < letters.Length; i++) //loop through each letter
+                        //{
+                        //    //List<ScanCondition> conditions = new List<ScanCondition>();
+                        //    //conditions.Add(new ScanCondition("letter", ScanOperator.Equal, letters[i]));
+
+                        //    //var allDocs = await dbContext.ScanAsync<alphabet>(conditions).GetRemainingAsync();
+                        //    //var tempDoc = allDocs.FirstOrDefault();
+                        //    //String tempString = tempDoc.morse;
+                        //    //char[] temp = tempString.ToCharArray();
+                        string token = "";
+                        foreach (var item in morse)
+                        {
+                            token += item;
+                        }
+                        response = ResponseBuilder.AudioPlayerPlay(PlayBehavior.ReplaceAll, "https://s3.eu-central-1.amazonaws.com/morseitech/360ms.mp3", token);
                         break;
+
                     default:
                         log.LogLine($"Unknown intent: " + intentRequest.Intent.Name);
                         innerResponse = new PlainTextOutputSpeech();
                         (innerResponse as PlainTextOutputSpeech).Text = GetResources()[0].HelpReprompt;
                         break;
                 }
+            }
+            else if (input.GetRequestType() == typeof(AudioPlayerRequest))
+            {
+                var audioPlayerRequest = (AudioPlayerRequest)input.Request;
+                if (audioPlayerRequest.AudioRequestType == AudioRequestType.PlaybackNearlyFinished)
+                {
+                    //response.Response.Directives.Add(new AudioPlayerPlayDirective()
+                    //{
+
+                    //    PlayBehavior = PlayBehavior.Enqueue,
+                    //    AudioItem = new Alexa.NET.Response.Directive.AudioItem()
+                    //    {
+
+                    //        Stream = new AudioItemStream()
+                    //        {
+                    //            Url = "https://s3.eu-central-1.amazonaws.com/morseitech/360ms.mp3",
+                    //            Token = "360ms",
+                    //            ExpectedPreviousToken = "120ms"
+                    //        }
+                    //    }
+                    //});
+                    response = ResponseBuilder.AudioPlayerPlay(PlayBehavior.Enqueue, "https://s3.eu-central-1.amazonaws.com/morseitech/360ms.mp3", "test2", "test", 0);
+
+                }
+
+
+
+
+
+
+
             }
             response.Response.OutputSpeech = innerResponse;
             response.Version = "1.0";
