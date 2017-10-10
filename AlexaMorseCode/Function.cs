@@ -81,7 +81,8 @@ namespace AlexaMorseCode
 
     public class Function
     {
-
+        int a = 0;
+        List<char> Test = new List<char>();
         /// <summary>
         /// A simple function that takes a string and does a ToUpper
         /// </summary>
@@ -111,6 +112,7 @@ namespace AlexaMorseCode
 
         public List<char> Translate(char[] letters)
         {
+
             List<char> morse = new List<char>();
             //for (int i = 0; i < letters.Length; i++) //loop through each letter
             //{
@@ -138,9 +140,9 @@ namespace AlexaMorseCode
             //        }
             //    }
             //}
-            morse.Add('.');
-            morse.Add(',');
-            morse.Add('.');
+            Test.Add('.');
+            Test.Add(',');
+            Test.Add('.');
             morse.Add(',');
             morse.Add('-');
             morse.Add('+');
@@ -148,6 +150,7 @@ namespace AlexaMorseCode
             morse.Add(',');
             morse.Add('|');
             morse.Add('.');
+            
             return morse;
         }
 
@@ -235,31 +238,13 @@ namespace AlexaMorseCode
                         //        }
                         //    }
                         //});
-
-                        //response.Response.Directives.Add(new AudioPlayerPlayDirective()
-                        //{
-
-                        //    PlayBehavior = PlayBehavior.Enqueue,
-                        //    AudioItem = new Alexa.NET.Response.Directive.AudioItem()
-                        //    {
-
-                        //        Stream = new AudioItemStream()
-                        //        {
-                        //            Url = "https://s3.eu-central-1.amazonaws.com/morseitech/360ms.mp3",
-                        //            Token = "360ms",
-                        //            ExpectedPreviousToken = "120ms"
-                        //        }
-                        //    }
-                        //});
-
-
-
+                        Test.Add('.');
+                        Test.Add(',');
+                        Test.Add('.');
                         //response.Response.ShouldEndSession = true;
 
                         response = ResponseBuilder.AudioPlayerPlay(PlayBehavior.ReplaceAll, "https://s3.eu-central-1.amazonaws.com/morseitech/360ms.mp3", "test");
-
                         //(innerResponse as PlainTextOutputSpeech).Text = GetResources()[0].GetMorseCode;
-                        //Output(Translate(ToArray(morseRequested)));
                         break;
                         
                     default:
@@ -274,31 +259,40 @@ namespace AlexaMorseCode
                 var audioPlayerRequest = (AudioPlayerRequest)input.Request;
                 if (audioPlayerRequest.AudioRequestType == AudioRequestType.PlaybackNearlyFinished)
                 {
-                    //response.Response.Directives.Add(new AudioPlayerPlayDirective()
-                    //{
+                    if (a <= Test.Count())
+                    {
+                       
+                        
+                        //response = ResponseBuilder.AudioPlayerPlay(PlayBehavior.Enqueue, "https://s3.eu-central-1.amazonaws.com/morseitech/360ms.mp3", "test2", "test", 0);
 
-                    //    PlayBehavior = PlayBehavior.Enqueue,
-                    //    AudioItem = new Alexa.NET.Response.Directive.AudioItem()
-                    //    {
+                        char item = Test[a];
+                        
+                        if (item == '.')
+                        {
+                            response = ResponseBuilder.AudioPlayerPlay(PlayBehavior.Enqueue, "https://s3.eu-central-1.amazonaws.com/morseitech/360ms.mp3", a.ToString(), "asd", 0);
+                        }
+                        else if (item == ',')
+                        {
+                            response = ResponseBuilder.AudioPlayerPlay(PlayBehavior.Enqueue, "https://s3.eu-central-1.amazonaws.com/morseitech/120ms.mp3", a.ToString(), "asd", 0);
+                        }
+                        else if (item == '-')
+                        {
+                            response = ResponseBuilder.AudioPlayerPlay(PlayBehavior.Enqueue, "https://s3.eu-central-1.amazonaws.com/morseitech/360ms.mp3", a.ToString(), "asd", 0);
+                        }
+                        else if (item == '|')
+                        {
+                            response = ResponseBuilder.AudioPlayerPlay(PlayBehavior.Enqueue, "https://s3.eu-central-1.amazonaws.com/morseitech/360ms.mp3", a.ToString(), "asd", 0);
+                        }
 
-                    //        Stream = new AudioItemStream()
-                    //        {
-                    //            Url = "https://s3.eu-central-1.amazonaws.com/morseitech/360ms.mp3",
-                    //            Token = "360ms",
-                    //            ExpectedPreviousToken = "120ms"
-                    //        }
-                    //    }
-                    //});
-                    response = ResponseBuilder.AudioPlayerPlay(PlayBehavior.Enqueue, "https://s3.eu-central-1.amazonaws.com/morseitech/360ms.mp3", "test2","test",0);
 
+                        a++;
+                    }
+                    else
+                    {
+                        a = 0;
+                        Test.Clear();
+                    }
                 }
-                
- 
-
-
-                
-
-
             }
             response.Response.OutputSpeech = innerResponse;
             response.Version = "1.0";
