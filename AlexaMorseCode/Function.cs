@@ -96,8 +96,8 @@ namespace AlexaMorseCode
     {
         int a = 0;
         List<char> Test = new List<char>();
-        private const string accessKey = "AKIAIQXPCGJ7QER56STQ";
-        private const string secretKey = "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";
+        private const string accessKey = "";
+        private const string secretKey = "";
         /// <summary>
         /// A simple function that takes a string and does a ToUpper
         /// </summary>
