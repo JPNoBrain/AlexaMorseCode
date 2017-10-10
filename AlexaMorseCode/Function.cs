@@ -91,10 +91,11 @@ namespace AlexaMorseCode
         public string morse { get; set; }
     }
 
-        int a = 0;
-        List<char> Test = new List<char>();
+       
     public class Function
     {
+        int a = 0;
+        List<char> Test = new List<char>();
         private const string accessKey = "AKIAIQXPCGJ7QER56STQ";
         private const string secretKey = "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";
         /// <summary>
