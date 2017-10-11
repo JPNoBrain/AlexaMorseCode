@@ -97,8 +97,8 @@ namespace AlexaMorseCode
     {
         int a = 0;
         List<char> Test = new List<char>();
-        private const string accessKey = "AKIAI5PLL5VGTB6CKXDQ";
-        private const string secretKey = "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";
+        private const string accessKey = "AKIAJE65Z6K4LBYTR5MQ";
+        private const string secretKey = "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";
         string lastRequest = "";
         /// <summary>
         /// A simple function that takes a string and does a ToUpper
@@ -202,9 +202,8 @@ namespace AlexaMorseCode
                         (innerResponse as PlainTextOutputSpeech).Text = GetResources()[0].HelpMessage;
                         response.Response.OutputSpeech = innerResponse;
                         break;
-                    case "TranslateIntent": //TODO: Check if working
-                        log.LogLine($"GetFactIntent sent: send new fact");
-                        //innerResponse = new PlainTextOutputSpeech();
+                    case "TranslateIntent": 
+                        log.LogLine($"TranslateIntent sent: send morse code");
                         var morseRequested = intentRequest.Intent.Slots["Literal"].Value;
                         lastRequest = morseRequested;
                         char[] letters = morseRequested.ToCharArray();
@@ -225,16 +224,16 @@ namespace AlexaMorseCode
                                 var tempDoc = allDocs.FirstOrDefault();
                                 String tempString = tempDoc.morse;
                                 char[] temp = tempString.ToCharArray();
-                                foreach (var itemm in temp)
+                                foreach (var sign in temp)
                                 {
-                                    morse.Add(itemm);
+                                    morse.Add(sign);
                                 }
                                 morse.Add('+');
                             }
                             i++;
                         }
                         var output = new StringBuilder();
-                        output.Append(@"<speak>Here is your morse code for <break time=""50ms""/>");
+                        output.Append(@"<speak>Here is your morse code for <break time=""30ms""/>");
                         output.Append(morseRequested);
                         output.Append(@"<break time=""100ms""/>");
                         foreach (var item in morse)
@@ -248,26 +247,20 @@ namespace AlexaMorseCode
                             }
                             else if (item == ',')
                             {
-                                //output.Append(@"<audio src = ""https://s3.eu-central-1.amazonaws.com/morseitech/120ms_silence.mp3"" />");
-                                //output.Append(@"<say-as interpret-as=""expletive"">hulume.</say-as><break time=""100ms""/>");
                                 output.Append(@"<break time=""100ms""/>");
                             }
                             else if (item == '-')
                             {
-                                //output.Append(@"<audio src = ""https://s3.eu-central-1.amazonaws.com/morseitech/360ms.mp3"" />");
-                                //output.Append(@"<say-as interpret-as=""expletive"">hulume</say-as><break time=""100ms""/>");
                                 output.Append(@"<prosody rate=""x-slow"">beep</prosody>");
                                 card.Append("-");
                             }
                             else if (item == '|')
                             {
-                                //output.Append(@"<audio src = ""https://s3.eu-central-1.amazonaws.com/morseitech/820ms_silence.mp3"" />");
                                 output.Append(@"<break time=""800ms""/>");
                                 card.Append(" | ");
                             }
                             else if (item == '+')
                             {
-                                //output.Append(@"<audio src = ""https://s3.eu-central-1.amazonaws.com/morseitech/360ms_silence.mp3"" />");
                                 output.Append(@"<break time=""400ms""/>");
                                 card.Append(" ");
                             }
