@@ -7,7 +7,6 @@ using Alexa.NET.Response;
 using Alexa.NET.Request.Type;
 using Alexa.NET.Request;
 using Alexa.NET.Response.Directive;
-//using AudioSkillSample.Assets;
 using Alexa.NET;
 using Amazon.Runtime;
 using Amazon.DynamoDBv2;
@@ -39,7 +38,7 @@ namespace AlexaMorseCode
         public string LaunchMessage { get; set; }
     }
 
-    //Class equal to database columns
+    //Class equal to database table
     public class alphabet
     {
         public char letter { get; set; }
@@ -70,6 +69,7 @@ namespace AlexaMorseCode
             return resources;
         }
 
+        //FunctionHandler is called whenever the User sends a request to the skill
         public async Task<SkillResponse> FunctionHandler(SkillRequest input, ILambdaContext context)
         {
             List<char> morse = new List<char>();
