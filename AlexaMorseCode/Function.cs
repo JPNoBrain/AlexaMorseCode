@@ -124,7 +124,7 @@ namespace AlexaMorseCode
                         break;
                     case "TranslateIntent": 
                         log.LogLine($"TranslateIntent sent: send morse code");
-                        var morseRequested = intentRequest.Intent.Slots["Literal"].Value;
+                        var morseRequested = intentRequest.Intent.Slots["FreeInput"].Value;
                         lastRequest = morseRequested;
                         char[] letters = morseRequested.ToCharArray();
                         int i = 0;
