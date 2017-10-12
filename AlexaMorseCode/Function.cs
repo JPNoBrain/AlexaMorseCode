@@ -48,8 +48,8 @@ namespace AlexaMorseCode
     public class Function
     {
         //Database access keys
-        private const string accessKey = "xxxxxx";
-        private const string secretKey = "xxxxxx";
+        private const string accessKey = "AKIAIAIF6G2VJVM2IFDQ";
+        private const string secretKey = "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";
 
         //Contains the morse code for the card
         string lastRequest = "";
@@ -133,6 +133,10 @@ namespace AlexaMorseCode
                             if (item == ' ')
                             {
                                 morse.Add('|');
+                            }
+                            else if (item == '.' || item == ',' || item == '?' || item == '!')
+                            {
+
                             }
                             else
                             {
