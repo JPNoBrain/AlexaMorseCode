@@ -293,7 +293,41 @@ namespace AlexaMorseCode
                     //    }
                     //});
                     response = ResponseBuilder.AudioPlayerPlay(PlayBehavior.Enqueue, "https://s3.eu-central-1.amazonaws.com/morseitech/360ms.mp3", "test2", "test", 0);
+                    /*
+                     * {
+  "intents": [
+    {
+      "intent": "AMAZON.ResumeIntent"
+    },
+    {
+      "intent": "AMAZON.PauseIntent"
+    },
+    {
+      "slots": [
+        {
+          "name": "Literal",
+          "type": "AMAZON.LITERAL"
+        }
+      ],
+      "intent": "TranslateIntent"
+    },
+    {
+      "intent": "AMAZON.HelpIntent"
+    },
+    {
+      "intent": "AMAZON.StopIntent"
+    },
+    {
+      "intent": "AMAZON.CancelIntent"
+    }
+  ]
+}
 
+                TranslateIntent morse {hello world|Literal}
+TranslateIntent translate {hello world|Literal}
+AMAZON.StopIntent that is enough
+                     * 
+                     */
                 }
 
 
