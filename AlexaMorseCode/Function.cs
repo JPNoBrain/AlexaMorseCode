@@ -20,53 +20,6 @@ using System.Text;
 // Assembly attribute to enable the Lambda function's JSON input to be converted into a .NET class.
 [assembly: LambdaSerializer(typeof(Amazon.Lambda.Serialization.Json.JsonSerializer))]
 
-//namespace AudioSkillSample.Assets
-//{
-//    public class AudioAssets
-//    {
-//        public static AudioItem[] GetSampleAudioFiles()
-//        {
-//            AudioItem[] returnAudio = new AudioItem[5];
-
-//            returnAudio[0] = (new AudioItem()
-//            {
-//                Title = "50ms",
-//                Url = "https://s3.eu-central-1.amazonaws.com/morseitech/50ms.mp3"
-//            }
-//            );
-//            returnAudio[1] = (new AudioItem()
-//            {
-//                Title = "50ms_silence",
-//                Url = "https://s3.eu-central-1.amazonaws.com/morseitech/50ms_silence.mp3"
-//            });
-//            returnAudio[2] = (new AudioItem()
-//            {
-//                Title = "150ms",
-//                Url = "https://s3.eu-central-1.amazonaws.com/morseitech/150ms.mp3"
-//            }
-//            );
-//            returnAudio[3] = (new AudioItem()
-//            {
-//                Title = "150ms_silence",
-//                Url = "https://s3.eu-central-1.amazonaws.com/morseitech/150ms_silence.mp3"
-//            });
-//            returnAudio[4] = (new AudioItem()
-//            {
-//                Title = "350ms",
-//                Url = "https://s3.eu-central-1.amazonaws.com/morseitech/350ms.mp3"
-//            }
-//            );
-
-//            return returnAudio;
-//        }
-//    }
-
-//    public class AudioItem
-//    {
-//        public string Title { get; set; }
-//        public string Url { get; set; }
-//    }
-//}
 
 namespace AlexaMorseCode
 {
@@ -86,28 +39,24 @@ namespace AlexaMorseCode
         public string LaunchMessage { get; set; }
     }
 
+    //Class equal to database columns
     public class alphabet
     {
         public char letter { get; set; }
         public string morse { get; set; }
     }
 
-       
     public class Function
     {
-        int a = 0;
-        List<char> Test = new List<char>();
-        private const string accessKey = "AKIAJE65Z6K4LBYTR5MQ";
-        private const string secretKey = "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";
+        //Database access keys
+        private const string accessKey = "xxxxxx";
+        private const string secretKey = "xxxxxx";
+
+        //Contains the morse code for the card
         string lastRequest = "";
-        /// <summary>
-        /// A simple function that takes a string and does a ToUpper
-        /// </summary>
-        /// <param name="input"></param>
-        /// <param name="context"></param>
-        /// <returns></returns>
+
         public List<Messages> GetResources()
-        // Actually needed? Maybe without List, but raw object.
+        // List that defines english responses 
         {
             List<Messages> resources = new List<Messages>();
             Messages enUSResource = new Messages("en-US");
@@ -121,62 +70,33 @@ namespace AlexaMorseCode
             return resources;
         }
 
-        //public char[] ToArray(string input)
-        //{
-        //    char[] characters = input.ToCharArray();
-        //    return characters;
-        //}
-
-        //public void Output(List<char> input)
-        //{
-        //    var audioItems = AudioAssets.GetSampleAudioFiles();
-        //    for (int i = 0; i < input.Capacity; i++)
-        //    {
-        //        switch (input.ElementAt(i))
-        //        {
-        //            case '.':
-        //                ResponseBuilder.AudioPlayerPlay(PlayBehavior.Enqueue, audioItems[0].Url, audioItems[0].Title); //50ms
-        //                break;
-        //            case ',':
-        //                ResponseBuilder.AudioPlayerPlay(PlayBehavior.Enqueue, audioItems[1].Url, audioItems[1].Title); //50ms_silence
-        //                break;
-        //            case '-':
-        //                ResponseBuilder.AudioPlayerPlay(PlayBehavior.Enqueue, audioItems[2].Url, audioItems[2].Title); //150ms
-        //                break;
-        //            case '+':
-        //                ResponseBuilder.AudioPlayerPlay(PlayBehavior.Enqueue, audioItems[3].Url, audioItems[3].Title); //150ms_silence
-        //                break;
-        //            case '|':
-        //                ResponseBuilder.AudioPlayerPlay(PlayBehavior.Enqueue, audioItems[4].Url, audioItems[4].Title); //350ms_silence
-
-        //                break;
-        //        }
-        //    }
-        //    //TODO
-        //}
-
         public async Task<SkillResponse> FunctionHandler(SkillRequest input, ILambdaContext context)
         {
             List<char> morse = new List<char>();
             var card = new StringBuilder();
+
+            //Connect to database
             var credentials = new BasicAWSCredentials(accessKey, secretKey);
             var client = new AmazonDynamoDBClient(credentials, RegionEndpoint.USEast1);
             var dbContext = new DynamoDBContext(client);
 
+            //Create empty response
             SkillResponse response = new SkillResponse();
             response.Response = new ResponseBody();
             response.Response.ShouldEndSession = false;
             IOutputSpeech innerResponse = null;
             var log = context.Logger;
 
+            //Check if request is a launch request 
             if (input.GetRequestType() == typeof(LaunchRequest))
             {
-                log.LogLine($"Default LaunchRequest made: 'Alexa, open Science Facts");
+                log.LogLine($"Default LaunchRequest made: 'Alexa, start Morse Translator");
                 innerResponse = new PlainTextOutputSpeech();
                 (innerResponse as PlainTextOutputSpeech).Text = GetResources()[0].LaunchMessage;
                 response.Response.OutputSpeech = innerResponse;
 
             }
+            //If request is not a launch request, check what kind of intent has been requested
             else if (input.GetRequestType() == typeof(IntentRequest))
             {
                 var intentRequest = (IntentRequest)input.Request;
@@ -216,18 +136,27 @@ namespace AlexaMorseCode
                             }
                             else
                             {
+                                //Convert char to string uppercase the string and convert to char[0]
                                 char comp = item.ToString().ToUpper().ToCharArray()[0];
+                                //Create new Condition
                                 List<ScanCondition> conditions = new List<ScanCondition>();
+                                //Fill the condition. "letter" is the name of the Column, gets compared with comp
                                 conditions.Add(new ScanCondition("letter", ScanOperator.Equal, comp));
 
+                                //Start database query with conditions (alphabet contains the same poperties as the tables columns)
                                 var allDocs = await dbContext.ScanAsync<alphabet>(conditions).GetRemainingAsync();
+                                //Get the first result
                                 var tempDoc = allDocs.FirstOrDefault();
-                                String tempString = tempDoc.morse;
+                                //save the content of the morse column in tempString
+                                string tempString = tempDoc.morse;
+                                //Convert tempString to char array
                                 char[] temp = tempString.ToCharArray();
+                                //Add each content from the temp array to the final morse list
                                 foreach (var sign in temp)
                                 {
                                     morse.Add(sign);
                                 }
+                                //add a + to the morse list to indicate that the letter is finished
                                 morse.Add('+');
                             }
                             i++;
@@ -238,10 +167,10 @@ namespace AlexaMorseCode
                         output.Append(@"<break time=""100ms""/>");
                         foreach (var item in morse)
                         {
+                            //output.Append adds to the output that you can hear from Alexa
+                            //card.Append adds to the ouput that you can see in the Alexa app
                             if (item == '.')
                             {
-                                //output.Append(@"<audio src = ""https://s3.eu-central-1.amazonaws.com/morseitech/120ms.mp3"" />");
-                                //output.Append(@"<say-as interpret-as=""expletive"">hulume.</say-as><break time=""100ms""/>");
                                 output.Append(@"<prosody rate=""fast"">beep</prosody>");
                                 card.Append(".");
                             }
@@ -266,11 +195,14 @@ namespace AlexaMorseCode
                             }
                         }
                         output.Append("</speak>");
+                        //define that the output is a SsmlOutputSpeech
                         innerResponse = new SsmlOutputSpeech();
+                        //fill the SsmlOuputSpeech
                         (innerResponse as SsmlOutputSpeech).Ssml = output.ToString();
+                        //end the session after the response gets played
                         response.Response.ShouldEndSession = true;
+                        //fill the response with the ssml output and the content for the card(Alexa App)
                         response = ResponseBuilder.TellWithCard(innerResponse, "Morse code for: " + lastRequest, "Here is your morse code: " + card.ToString());
-                        //response = ResponseBuilder.AudioPlayerPlay(PlayBehavior.ReplaceAll, "https://s3.eu-central-1.amazonaws.com/morseitech/120ms_silence.mp3", "Hello");
                         break;
 
                     default:
@@ -280,47 +212,9 @@ namespace AlexaMorseCode
                         response.Response.OutputSpeech = innerResponse;
                         break;
                 }
-            }
-            //else if (input.GetRequestType() == typeof(AudioPlayerRequest))
-            //{
-            //    var audioPlayerRequest = (AudioPlayerRequest)input.Request;
-            //    if (audioPlayerRequest.AudioRequestType == AudioRequestType.PlaybackNearlyFinished)
-            //    {
-            //        if (a <= morse.Count())
-            //        {
-            //            char item = morse[a];
-
-            //            if (item == '.')
-            //            {
-            //                response = ResponseBuilder.AudioPlayerPlay(PlayBehavior.Enqueue, "https://s3.eu-central-1.amazonaws.com/morseitech/120ms.mp3", a.ToString(), "asd", 0);
-            //            }
-            //            else if (item == ',')
-            //            {
-            //                response = ResponseBuilder.AudioPlayerPlay(PlayBehavior.Enqueue, "https://s3.eu-central-1.amazonaws.com/morseitech/120ms_silence.mp3", a.ToString(), "asd", 0);
-            //            }
-            //            else if (item == '-')
-            //            {
-            //                response = ResponseBuilder.AudioPlayerPlay(PlayBehavior.Enqueue, "https://s3.eu-central-1.amazonaws.com/morseitech/360ms.mp3", a.ToString(), "asd", 0);
-            //            }
-            //            else if (item == '|')
-            //            {
-            //                response = ResponseBuilder.AudioPlayerPlay(PlayBehavior.Enqueue, "https://s3.eu-central-1.amazonaws.com/morseitech/820ms_silence.mp3", a.ToString(), "asd", 0);
-            //            }
-            //            else if (item == '+')
-            //            {
-            //                response = ResponseBuilder.AudioPlayerPlay(PlayBehavior.Enqueue, "https://s3.eu-central-1.amazonaws.com/morseitech/360ms_silence.mp3", a.ToString(), "asd", 0);
-            //            }
-            //            a++;
-            //        }
-            //        else
-            //        {
-            //            a = 0;
-            //            morse.Clear();
-            //        }
-            //    }
-            //}
-            //response.Response.OutputSpeech = innerResponse;
+            }   
             response.Version = "1.0";
+            //return the response to the function handler, the function handler returns the response to alexa
             return response;
         }
     }
